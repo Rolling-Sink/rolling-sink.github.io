@@ -363,15 +363,18 @@
     </p>
     <p>
       &#x24D0; The caching mechanism of <a href="https://self-forcing.github.io/">Self Forcing</a>, the total cache capacity $K$ is strictly bounded for streaming efficiency.
-    </p>
-    <p>
-      &#x24D1; We firstly apply Attention Sink (i.e., pinning the first $S$ blocks as sink blocks where both the time indices and semantics are static), and analyze the effect of different sink ratios ($\frac{S}{K}$).
-    </p>
-    <p>
-      &#x24D2; Sliding Indices: Treating the time indices as a global axis $i\in[0,\infty)$, at each AR step $i$, we shift sink blocks' time indices from a fixed-length (i.e., $S$) sliding window on this axis right before the recent and current blocks.
-    </p>
-    <p>
-      &#x24D3; Sliding Semantics: Ideally, the sink blocks' semantic content should also slide along the same rolling horizon, i.e., a moving slice of a minimal drifted, global video manifold that lasts endlessly.
+      <br>
+    <!-- </p>
+    <p> -->
+      &#x24D1; We firstly apply <strong>Attention Sink</strong> (i.e., pinning the first $S$ blocks as sink blocks where both the time indices and semantics are static), and analyze the effect of different sink ratios ($\frac{S}{K}$).
+      <br>
+    <!-- </p>
+    <p> -->
+      &#x24D2; <strong>Sliding Indices</strong>: Treating the time indices as a global axis $i\in[0,\infty)$, at each AR step $i$, we shift sink blocks' time indices from a fixed-length (i.e., $S$) sliding window on this axis right before the recent and current blocks.
+      <br>
+    <!-- </p>
+    <p> -->
+      &#x24D3; <strong>Sliding Semantics</strong>: Ideally, the sink blocks' semantic content should also slide along the same rolling horizon, i.e., a moving slice of a minimal drifted, global video manifold that lasts endlessly.
       Since finite-length training cannot naturally realize this, we <strong>approximate</strong> the true semantic sliding by <strong>rolling</strong> the sink content (i.e., at each AR step, we update the sink blocks' semantic content with a rolling segment from the within-duration history).
     </p>
     <p>
@@ -379,7 +382,7 @@
       For clarity, here we set $K=3$ and $S=2$.
     </p>
     </div>
-    <h3 class="title is-4">Evaluations during Our Analysis</h3>
+    <h3 class="title is-4">Ablation Studies</h3>
     <div class="columns has-text-justified">
       <div class="column is-8">
         <img src="./images/method2.png">
