@@ -353,9 +353,118 @@
       Thus, for maintaining drift-free during open-ended testing, the AR cache should stay consistent with its <strong>within-duration</strong> behavior/characteristic.
     </p>
     <p>
+      Concretely, building on <a href="https://self-forcing.github.io/">Self Forcing</a>, we aim to keep the AR cache consistent with its within-duration behavior under a strictly bounded capacity $K$.
+      This behavior includes:
+      &#9312; <strong>minimally drifted</strong>: all cached blocks should be <strong>drift-free</strong> (i.e., no over-saturated colors, no collapsed structures, etc.); and
+      &#9313; <strong>sliding in both indices and semantics</strong>: the cached blocks' time indices are assigned from a fixed-length sliding window on a global axis $i\in[0,\infty)$ immediately preceding the current block (i.e., <strong>Sliding Indices</strong>), similarly, the cached blocks' semantic content is also updated as a moving slice from a global video manifold that lasts endlessly (i.e., <strong>Sliding Semantics</strong>).
+    </p>
+    <p>
       <img src="./images/method1.png">
     </p>
+    <p>
+      &#x24D0; The caching mechanism of <a href="https://self-forcing.github.io/">Self Forcing</a>, the total cache capacity $K$ is strictly bounded for streaming efficiency.
+    </p>
+    <p>
+      &#x24D1; We firstly apply Attention Sink (i.e., pinning the first $S$ blocks as sink blocks where both the time indices and semantics are static), and analyze the effect of different sink ratios ($\frac{S}{K}$).
+    </p>
+    <p>
+      &#x24D2; Sliding Indices: Treating the time indices as a global axis $i\in[0,\infty)$, at each AR step $i$, we shift sink blocks' time indices from a fixed-length (i.e., $S$) sliding window on this axis right before the recent and current blocks.
+    </p>
+    <p>
+      &#x24D3; Sliding Semantics: Ideally, the sink blocks' semantic content should also slide along the same rolling horizon, i.e., a moving slice of a minimal drifted, global video manifold that lasts endlessly.
+      Since finite-length training cannot naturally realize this, we <strong>approximate</strong> the true semantic sliding by <strong>rolling</strong> the sink content (i.e., at each AR step, we update the sink blocks' semantic content with a rolling segment from the within-duration history).
+    </p>
+    <p>
+      Finally, we propose &#x24D3; and name it <strong class="rolling-sink-2">Rolling Sink</strong>.
+      For clarity, here we set $K=3$ and $S=2$.
+    </p>
     </div>
+    <h3 class="title is-4">Evaluations during Our Analysis</h3>
+    <div class="columns has-text-justified">
+      <div class="column is-8">
+        <img src="./images/method2.png">
+      </div>
+      <div class="column is-4">
+        <p>
+          As illustrated ⬅️, the video quality is consistently improved during our systematic analysis and the derived <strong class="rolling-sink-2">Rolling Sink</strong> yields the best performance (particularly when $\frac{S}{K}=83\%$).
+        </p>
+        <p>
+          The video quality score is the averaged score across all dimensions tested using <a href="https://github.com/Vchitect/VBench/tree/master/vbench2_beta_long">VBench-Long</a>.
+        </p>
+      </div>
+    </div>
+    <div class="columns has-text-justified">
+      <video controls autoplay muted loop playsinline preload="metadata">
+        <source src="./videos/w_SA_woman.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="columns has-text-justified">
+      <video controls autoplay muted loop playsinline preload="metadata">
+        <source src="./videos/w_SA_SUV.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="columns has-text-justified">
+      <img src="./images/method3.png">
+    </div>
+    <div class="columns has-text-justified">
+      <p>
+        Larger sink sizes stabilize colors. But noticeable AR drift still persists, e.g., frame flickers. Here we set $t=60\text{s}$.
+      </p>
+    </div>
+    <div class="columns is-variable is-1 has-text-justified">
+      <div class="column is-3">
+        <video controls autoplay muted loop playsinline preload="metadata">
+          <source src="./videos/w_IC_woman.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="column is-3">
+        <img src="./images/method4.png">
+      </div>
+      <div class="column is-3">
+        <video controls autoplay muted loop playsinline preload="metadata">
+          <source src="./videos/w_SC_woman.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="column is-3">
+        <p>
+          Introducing Sliding Indices reduces AR drift, most noticeably by mitigating flicker.
+          However, noticeable drift still persists, e.g., inconsistencies.
+        </p>
+      </div>
+    </div>
+    <div class="columns is-variable is-1 has-text-justified" style="margin-top: -40px;">
+      <div class="column is-3">
+        <video controls autoplay muted loop playsinline preload="metadata">
+          <source src="./videos/w_IC_SUV.mp4" type="video/mp4">
+        </video>
+        <p style="text-align: center; margin-top: -8px;">
+          <strong>w/o</strong> Sliding Semantics
+          <br>
+          <strong>w/</strong> Sliding Indices
+        </p>
+      </div>
+      <div class="column is-3">
+        <img src="./images/method5.png">
+        <p style="text-align: center; margin-top: -8px;">
+          Initial frame
+        </p>
+      </div>
+      <div class="column is-3">
+        <video controls autoplay muted loop playsinline preload="metadata">
+          <source src="./videos/w_SC_SUV.mp4" type="video/mp4">
+        </video>
+        <p style="text-align: center; margin-top: -8px;">
+          <strong>w/</strong> Sliding Semantics
+          <br>
+          <strong>w/</strong> Sliding Indices
+        </p>
+      </div>
+      <div class="column is-3">
+        <p>
+          Approximating Sliding Semantics via rolling the semantic content of sink blocks further mitigates the AR drift, noticeably illustrated as improved consistencies.
+          Here we also set $t=60\text{s}$.
+        </p>
+      </div>
   </div>
 </section>
 
