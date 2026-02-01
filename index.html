@@ -364,16 +364,10 @@
     <p>
       &#x24D0; The caching mechanism of <a href="https://self-forcing.github.io/">Self Forcing</a>, the total cache capacity $K$ is strictly bounded for streaming efficiency.
       <br>
-    <!-- </p>
-    <p> -->
       &#x24D1; We firstly apply <strong>Attention Sink</strong> (i.e., pinning the first $S$ blocks as sink blocks where both the time indices and semantics are static), and analyze the effect of different sink ratios ($\frac{S}{K}$).
       <br>
-    <!-- </p>
-    <p> -->
       &#x24D2; <strong>Sliding Indices</strong>: Treating the time indices as a global axis $i\in[0,\infty)$, at each AR step $i$, we shift sink blocks' time indices from a fixed-length (i.e., $S$) sliding window on this axis right before the recent and current blocks.
       <br>
-    <!-- </p>
-    <p> -->
       &#x24D3; <strong>Sliding Semantics</strong>: Ideally, the sink blocks' semantic content should also slide along the same rolling horizon, i.e., a moving slice of a minimal drifted, global video manifold that lasts endlessly.
       Since finite-length training cannot naturally realize this, we <strong>approximate</strong> the true semantic sliding by <strong>rolling</strong> the sink content (i.e., at each AR step, we update the sink blocks' semantic content with a rolling segment from the within-duration history).
     </p>
