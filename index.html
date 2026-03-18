@@ -294,15 +294,12 @@
     <div class="content has-text-justified">
     <p>
       Recently, autoregressive (AR) video diffusion models has achieved remarkable performance.
-      However, due to their limited training durations a train-test gap emerges when testing at longer horizons, leading to rapid visual degradations.
+      However, due to their limited training durations, a train-test gap emerges when testing at longer horizons, leading to rapid visual degradations.
     </p><p>
       Following Self Forcing, which studies the train-test gap <strong>within</strong> the training duration, this work studies the train-test gap <strong>beyond</strong> the training duration, i.e., the gap between the limited horizons during training and open-ended horizons during testing.
-    <!-- </p><p> -->
       Since open-ended testing can extend beyond any finite training window, and long-video training is computationally expensive, we pursue a training-free solution to bridge this gap.
     </p><p>
-      To explore a training-free solution, we conduct a systematic analysis of AR cache maintenance. These insights lead to <strong class="rolling-sink-2">Rolling Sink</strong>.
-      Built on Self Forcing (trained on only 5s clips), Rolling Sink effectively scales the AR video synthesis to ultra-long durations (e.g., 5-30 minutes) at test time, with consistent subjects, stable colors, coherent structures, and smooth motions.
-      As demonstrated by extensive experiments, Rolling Sink achieves superior long-horizon visual fidelity and temporal consistency compared to SOTA baselines.
+      To explore a training-free solution, we conduct a systematic analysis of AR cache maintenance. These insights lead to <strong class="rolling-sink-2">Rolling Sink</strong>. Built on Self Forcing (trained on only 5s clips), Rolling Sink effectively scales the AR video synthesis to ultra-long durations (e.g., 5-30 minutes at 16 FPS) at test time, with consistent subjects, stable colors, coherent structures, and smooth motions. As demonstrated by extensive experiments, Rolling Sink achieves superior long-horizon visual fidelity and temporal consistency compared to SOTA baselines.
     </p>
     </div>
   </div>
@@ -313,7 +310,7 @@
     <h2 class="title is-3 has-text-centered">Motivation</h2>
     <div class="content has-text-justified">
       <p>
-        Generating a long video (e.g., a movie) typically requires <strong>multi-shots</strong> input, i.e., a sequence of prompts.
+        Generating a long video (e.g., a movie) typically requires a <strong>multi-shot</strong> input, i.e., a sequence of prompts.
         Each shot typically corresponds to a single prompt, and can vary from few seconds to minutes, even hours long.
         For instance, Steve McQueen's <a href="https://en.wikipedia.org/wiki/Hunger_(2008_film)">Hunger</a> begins with a classic 16.5 minutes dialogue shot (<a href="https://www.youtube.com/watch?v=aycGYu_8Hhw">YouTube link</a>, from <a href="https://youtu.be/aycGYu_8Hhw?si=FtKPoc_G5tkE1NU_&t=60">1:00</a> to <a href="https://youtu.be/aycGYu_8Hhw?si=NKrp7uH6VbYd7-Z7&t=1050">17:30</a>) between Bobby Sands and the priest.
         This motivates <strong>open-ended</strong> video generation.
@@ -329,7 +326,7 @@
           <a href="https://deepmind.google/models/veo/">Veo</a>,
           <a href="https://runwayml.com/research/introducing-runway-gen-4.5">Gen</a>) 
           have achieved remarkable performance, they usually denoise all frames simultaneously, making them <strong>incompatible</strong> with such open-ended setting.
-          In contrast, autoregressive (AR) video diffusion models <strong>architecturally</strong> enables open-ended video generation by continuously predicting the <strong>next-frame</strong> conditioned on previous ones.
+          In contrast, autoregressive (AR) video diffusion models <strong>architecturally</strong> enables open-ended video generation by continuously predicting the <strong>next-frame</strong> (or <strong>next-block</strong>) conditioned on previous ones.
         </p>
         <p>
           However, AR video diffusion models are typically trained on limited and fixed durations (e.g., 5s in <a href="https://self-forcing.github.io/">Self Forcing</a>).
@@ -375,9 +372,9 @@
       <br>
       &#x24D1; We firstly apply <strong>Attention Sink</strong> (i.e., pinning the first $S$ blocks as sink blocks where both the time indices and semantics are static), and analyze the effect of different sink ratios ($\frac{S}{K}$).
       <br>
-      &#x24D2; <strong>Sliding Indices</strong>: Treating the time indices as a global axis $i\in[0,\infty)$, at each AR step $i$, we shift sink blocks' time indices from a fixed-length (i.e., $S$) sliding window on this axis right before the recent and current blocks.
+      &#x24D2; <strong>Sliding Indices</strong>: Treating the time indices as a global axis $i\in[0,\infty)$, at each AR step $i$, we shift sink blocks' time indices as a fixed-length (i.e., $S$) sliding window on this axis right before the recent and current blocks.
       <br>
-      &#x24D3; <strong>Sliding Semantics</strong>: Ideally, the sink blocks' semantic content should also slide along the same rolling horizon, i.e., a moving slice of a minimal drifted, global video manifold that lasts endlessly.
+      &#x24D3; <strong>Sliding Semantics</strong>: Ideally, the sink blocks' semantic content should also slide along a drift-free, global video manifold that lasts endlessly.
       Since finite-length training cannot naturally realize this, we <strong>approximate</strong> the true semantic sliding by <strong>rolling</strong> the sink content (i.e., at each AR step, we update the sink blocks' semantic content with a rolling segment from the within-duration history).
     </p>
     <p>
