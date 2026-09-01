@@ -196,7 +196,7 @@ But resemble it along which axes? The cache reaches the model only through atten
 <!-- ============================ 4. RESULTS ============================ -->
 <h2 id="results">&sect;4&nbsp;&nbsp;Results</h2>
 <p>
-<span class="rolling-sink">Rolling Sink</span> is training-free. We apply it to two 5s-trained bases, Self Forcing and Causal Forcing, reusing each base's few-step denoising and cache budget $K=6$ at sink ratio $S/K=5/6$, and evaluate on <code>VBench-Long</code> over 1- and 5-minute rollouts. Baselines are training-free horizon-extension methods (Deep Forcing, &infin;-RoPE, MemRoPE) and training-based ones (Self / Causal / Rolling Forcing, LongLive).
+<strong><span class="rolling-sink">Rolling Sink</span></strong> is training-free. We apply it to two 5s-trained bases, Self Forcing and Causal Forcing, reusing each base's few-step denoising and cache budget $K=6$ at sink ratio $S/K=5/6$, and evaluate on <code>VBench-Long</code> over 1- and 5-minute rollouts. Baselines are training-free horizon-extension methods (Deep Forcing, &infin;-RoPE, MemRoPE) and training-based ones (Self / Causal / Rolling Forcing, LongLive).
 </p>
 <p>
 Rolling Sink attains the <strong>best averaged rank</strong> in every group, and its Self Forcing variant leads even the training-based baselines (including LongLive trained on 1-minute clips) at about 0.56% throughput change and constant GPU memory.
