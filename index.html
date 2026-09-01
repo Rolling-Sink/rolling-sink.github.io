@@ -80,6 +80,7 @@
   h4.sub { text-align: center; font-size: 1.15rem; margin-top: 22px; }
   .center { text-align: center; }
 
+  figure { margin: 20px 0; }
   .fig { display: block; max-width: 1000px; width: 100%; height: auto; margin: 16px auto; }
   .fig-wide { display: block; max-width: 1300px; width: 100%; height: auto; margin: 16px auto; }
   .fig-table { display: block; max-width: 1300px; width: 100%; margin: 12px 0 4px; }
@@ -179,43 +180,41 @@ Large video diffusion models (<a class="inline-link" href="https://openai.com/in
 
 <!-- ============================ 3. METHOD ============================ -->
 <h2 id="method">&sect;3&nbsp;&nbsp;Method</h2>
+<p>
+Across a rollout the prompt and initial noise are fixed, so the only changing input is the cache &mdash; the past self-generated chunks. The base was trained only on caches from within-horizon rollouts, so beyond that horizon the cache is out-of-distribution and quality degrades &mdash; a domain shift we call the cache-behavior mismatch. As we cannot train on unbounded lengths, the only test-time lever is to make the test cache resemble the within-horizon caches seen in training.
+</p>
+<p>
+But resemble it along which axes? The cache reaches the model only through attention, so each chunk is read along three channels: content, temporal position (its RoPE index), and, across chunks, a semantic trajectory. Matching the training distribution therefore reduces to matching these three &mdash; what the model conditions on, not a hand-picked list: &#9312;&nbsp;low-drift content, &#9313;&nbsp;sliding temporal indices, &#9314;&nbsp;evolving semantics. A frozen base keeps the last two but drifts on content, so <span class="rolling-sink">Rolling Sink</span> restores all three in order, content first, under the base's bounded budget of $K$ chunks, with no extra training.
+</p>
 <figure>
   <img class="fig" src="images/method_fig.png" alt="Cache analysis and four-stage derivation of Rolling Sink">
   <figcaption>
     Cache analysis and derivation of Rolling Sink.
-    (a) The base AR model uses a bounded recent cache; beyond the training horizon its temporal indices still slide and its semantics still evolve, but the cached <em>content</em> drifts.
-    (b) Attention Sink reuses low-drift within-horizon chunks to restore content, but leaves the sink fixed in indices and semantics.
+    (a) The base AR model keeps a bounded recent cache; beyond the training horizon its temporal indices still slide and its semantics still evolve, but the cached <em>content</em> drifts.
+    (b) Attention Sink reuses low-drift within-horizon chunks to restore content, yet leaves the sink fixed in indices and semantics.
     (c) Temporal Re-index assigns the sink chunks to the recent window just before the current chunk, restoring sliding indices.
     (d) Rolling Semantics traverses the low-drift chunks forward-then-reverse and reads a sliding window from them, restoring evolving semantics; one recent chunk is retained for local motion.
   </figcaption>
 </figure>
 <p>
-The prompt embedding is fixed, and each chunk starts from the same noise distribution. The only input that changes across the rollout is thus the cache, <em>i.e.</em>, the past self-generated chunks. Within the horizon, the cache stays in the training distribution and the model behaves as trained. Beyond it, the cache falls outside that distribution, each prediction is biased, and the errors compound. Since limited-horizon training can never cover open-ended lengths, the cache is the only test-time lever.
+Attention Sink (content) and Temporal Re-index (position) reuse existing mechanisms &mdash; the streaming-LLM attention sink and the RoPE realignment of prior horizon-extension work. The new component is Rolling Semantics: it traverses the finite bank of low-drift chunks forward-then-reverse and reads a sliding window, so the sink's semantics keep advancing with no periodic jump, while one retained recent chunk anchors local motion.
 </p>
-<p>
-The cache enters the model through attention over its chunks, so each chunk contributes three factors the model reads: content, temporal position, and, across chunks, a semantic trajectory. Keeping the test cache in-distribution therefore means matching these three &mdash; &#9312; low-drift content, &#9313; sliding temporal indices, and &#9314; evolving semantics. Rolling Sink restores them in order, content first, under the bounded budget of $K$ chunks.
-</p>
-
 <figure>
   <img class="fig" src="images/tab1.png" alt="Cache-mechanism comparison of long-horizon AR methods">
   <figcaption>Table 1. Cache-mechanism comparison of long-horizon AR methods. Beyond the training horizon, keeping the test cache in-distribution means matching the three factors the model conditions on (<em>drifted</em>: off-distribution content, <em>pinned</em>: static sink, <em>rolling</em>: evolving sink). Attention sink and RoPE re-indexing are existing mechanisms; only <span class="rolling-sink">Rolling Sink</span> matches all three, and Rolling Semantics (<em>rolling</em>) is its one new component.</figcaption>
-</figure>
-<h4 class="sub">&sect;3.1&nbsp;&nbsp;Cache-Behavior Ablation (each stage improves)</h4>
-<figure>
-  <img class="fig-wide" src="images/ablation.png" alt="Cache-behavior ablation: video quality vs sink/cache ratio">
-  <figcaption>
-    <em>Video Quality</em> (mean over all <code>VBench-Long</code> dimensions) rises as each cache behavior is added &mdash; Attention Sink, then Temporal Re-index, then Rolling Semantics &mdash; all above the no-sink-chunk base, at both 1- and 5-minute rollouts, and best at the default $S/K=5/6$.
-  </figcaption>
 </figure>
 
 <!-- ============================ 4. RESULTS ============================ -->
 <h2 id="results">&sect;4&nbsp;&nbsp;Results</h2>
 <p>
-We evaluate on <code>VBench-Long</code> over 1- and 5-minute rollouts (16 dimensions, averaged rank; lower is better), on two 5s-trained bases (Self Forcing, Causal Forcing) with cache budget $K=6$ and sink ratio $S/K=5/6$. Rolling Sink attains the best averaged rank in all groups, and its Self Forcing variant ranks first even against training-based baselines &mdash; including <a class="inline-link" href="https://nvlabs.github.io/LongLive/" target="_blank" rel="noopener">LongLive</a> trained on 1-minute clips &mdash; while using no extra training and about 0.56% throughput change at constant GPU memory.
+<span class="rolling-sink">Rolling Sink</span> is training-free. We apply it to two 5s-trained bases, Self Forcing and Causal Forcing, reusing each base's few-step denoising and cache budget $K=6$ at sink ratio $S/K=5/6$, and evaluate on <code>VBench-Long</code> over 1- and 5-minute rollouts (16 dimensions; we report the averaged rank within each base group, lower is better). Baselines are training-free horizon-extension methods (Deep Forcing, &infin;-RoPE, MemRoPE) and training-based ones (Self / Causal / Rolling Forcing, <a class="inline-link" href="https://nvlabs.github.io/LongLive/" target="_blank" rel="noopener">LongLive</a>).
+</p>
+<p>
+Rolling Sink attains the best averaged rank in every group, and its Self Forcing variant leads even the training-based baselines &mdash; including LongLive trained on 1-minute clips &mdash; at about 0.56% throughput change and constant memory. Since averaged rank aggregates 16 dimensions, this is an aggregate lead: the gains concentrate on the consistency, quality, and temporal-stability axes.
 </p>
 <h4 class="sub">&sect;4.1&nbsp;&nbsp;Quantitative Comparison</h4>
 <p>
-Comparison with training-free horizon-extension methods (Deep Forcing, &infin;-RoPE, MemRoPE) on <code>VBench-Long</code>. Rolling Sink attains the best averaged rank on both 5s-trained bases. The <em>Forward-only</em> row isolates the schedule &mdash; the forward-reverse traversal beats simple cycling.
+Against training-free horizon-extension methods, Rolling Sink ranks best on both bases; the <em>Forward-only</em> row isolates the schedule &mdash; full forward-reverse beats simple cycling.
 </p>
 <figure>
   <img class="fig-table" src="images/tab2.png" alt="VBench-Long 1-minute training-free comparison">
@@ -226,26 +225,37 @@ Comparison with training-free horizon-extension methods (Deep Forcing, &infin;-R
   <figcaption>Table 3. 5-minute rollouts (same organization). Averaged rank 2.12 and 2.12.</figcaption>
 </figure>
 <p>
-Comparison with training-based baselines, several trained on longer clips (6.5s for Rolling Forcing, 1&nbsp;minute for LongLive).
+Adding training-based baselines (Rolling Forcing trained on 6.5s, LongLive on 1&nbsp;minute):
 </p>
 <figure>
   <img class="fig-table" src="images/tab4.png" alt="VBench-Long comparison with training-based baselines">
   <figcaption>Table 4. Training-based comparison, 1- and 5-minute rollouts. Rolling Sink on the 5s Self Forcing base reaches the best averaged rank (2.38 and 2.06), ahead of LongLive trained on 1-minute clips (2.69 and 2.63), with no extra training.</figcaption>
 </figure>
-<h4 class="sub">&sect;4.2&nbsp;&nbsp;Drift over the 5-minute Rollout</h4>
+<h4 class="sub">&sect;4.2&nbsp;&nbsp;Cache-Behavior Ablation</h4>
+<figure>
+  <img class="fig-wide" src="images/ablation.png" alt="Cache-behavior ablation: video quality vs sink/cache ratio">
+  <figcaption>
+    <em>Video Quality</em> (mean over all <code>VBench-Long</code> dimensions) rises as each cache behavior is added &mdash; Attention Sink, then Temporal Re-index, then Rolling Semantics &mdash; all above the no-sink-chunk base, at both 1- and 5-minute rollouts, and best at the default $S/K=5/6$.
+  </figcaption>
+</figure>
+<h4 class="sub">&sect;4.3&nbsp;&nbsp;Drift over the 5-minute Rollout</h4>
 <figure>
   <img class="fig-wide" src="images/drift.png" alt="Drift over the 5-minute rollout across three VBench-Long dimensions">
   <figcaption>
     Three <code>VBench-Long</code> dimensions tracked along the 5-minute trajectory. Baselines degrade or fluctuate as frames accumulate, whereas both Rolling Sink variants stay higher and flatter &mdash; keeping quality high while slowing drift.
   </figcaption>
 </figure>
-<h4 class="sub">&sect;4.3&nbsp;&nbsp;Qualitative Comparison</h4>
+<h4 class="sub">&sect;4.4&nbsp;&nbsp;Qualitative Comparison</h4>
 <figure>
   <img class="fig-wide" src="images/qc.jpg" alt="Qualitative long-horizon comparison against training-free and training-based baselines">
   <figcaption>
     Matched-timestamp rollouts against training-free (Deep Forcing, &infin;-RoPE, MemRoPE) and training-based (Self/Causal/Rolling Forcing, LongLive) baselines; each method's training duration is in brackets. Rolled beyond their horizons the baselines accumulate drift &mdash; oversaturated colors, distorted structure, subject change, fading motion &mdash; while <span class="rolling-sink">Rolling Sink</span> holds subject, structure, and motion stable using only a 5s base.
   </figcaption>
 </figure>
+<h4 class="sub">&sect;4.5&nbsp;&nbsp;Inference Efficiency</h4>
+<p>
+Rolling Sink keeps the base's cache size and step count, so throughput tracks the base &mdash; 5.35 vs.&nbsp;5.38&nbsp;FPS on an RTX&nbsp;4090 (1-minute setting), a 0.56% change &mdash; and GPU memory stays constant, since $K$ does not grow with rollout length.
+</p>
 
 <!-- ============================ 5. BIBTEX ============================ -->
 <h2 id="bibtex">&sect;5&nbsp;&nbsp;BibTeX</h2>
