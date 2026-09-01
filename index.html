@@ -4,9 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Rolling Sink: a training-free inference-time cache policy that extends short-horizon-trained autoregressive video diffusion models to ultra-long test-time rollouts.">
-<title>Rolling Sink</title>
+<title>Rolling Sink: Bridging Limited-Horizon Training and Open-Ended Testing in Autoregressive Video Diffusion</title>
 
-<link rel="icon" href="images/icon.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -57,19 +56,19 @@
   .authors { text-align: center; font-size: 1.05rem; margin: 4px 0; }
   .authors a, .links-bar a, nav.toc a, .inline-link { color: var(--link); text-decoration: none; }
   .authors a:hover, .links-bar a:hover, nav.toc a:hover, .inline-link:hover { text-decoration: underline; }
-  .affils { text-align: center; font-size: 1.05rem; margin: 6px 0 18px; }
-  .links-bar { text-align: center; margin: 0 0 8px; }
-  .links-bar a { font-size: 1.05rem; white-space: nowrap; margin: 0 8px; line-height: 2; }
+  .affils { text-align: center; font-size: 1.05rem; margin: 0px 0 10px; }
+  .links-bar { text-align: center; margin: -4px 0 6px; }
+  .links-bar a { font-size: 1.05rem; white-space: nowrap; margin: 0 6px; line-height: 2; }
   .links-bar i { margin-right: 5px; }
   .links-bar svg { height: 0.95em; width: 0.95em; vertical-align: -0.05em; margin-right: 4px; fill: currentColor; }
 
   /* ---- teaser ---- */
   .teaser { margin: 12px auto 4px; }
-  .teaser video { display: block; width: 100%; height: auto; border-radius: 6px; background: #000; }
+  .teaser iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 8px; background: #000; }
   .teaser-caption { font-size: 1.08rem; text-align: center; margin: 12px auto 4px; max-width: 1100px; }
 
   /* ---- TOC ---- */
-  nav.toc { max-width: 1300px; margin: 22px auto 0; padding: 20px 22px; border-radius: 8px; background: #f6f6f6; }
+  nav.toc { max-width: 1300px; margin: 14px auto 0; padding: 20px 22px; border-radius: 8px; background: #f6f6f6; }
   nav.toc h3 { margin: 0 0 8px; font-size: 1.0rem; text-transform: uppercase; letter-spacing: 0.04em; }
   nav.toc ol { margin: 0; padding-left: 22px; }
   nav.toc li { margin: 4px 0; }
@@ -81,10 +80,10 @@
   h4.sub { text-align: center; font-size: 1.15rem; margin-top: 22px; }
   .center { text-align: center; }
 
-  .fig { display: block; max-width: 1150px; width: 100%; height: auto; margin: 16px auto; }
-  .fig-narrow { display: block; max-width: 760px; width: 100%; height: auto; margin: 16px auto; }
-  .fig-table { display: block; max-width: 1300px; width: 100%; height: auto; margin: 12px auto 4px; }
-  figcaption, .cap { font-size: 1.0rem; line-height: 1.5; color: #333; max-width: 1150px; margin: -4px auto 8px; text-align: center; }
+  .fig { display: block; max-width: 1000px; width: 100%; height: auto; margin: 16px auto; }
+  .fig-wide { display: block; max-width: 1300px; width: 100%; height: auto; margin: 16px auto; }
+  .fig-table { display: block; max-width: 1300px; width: 100%; margin: 12px 0 4px; }
+  figcaption, .cap { font-size: 1.0rem; line-height: 1.5; color: #333; max-width: 1000px; margin: -4px auto 8px; text-align: center; }
 
   .split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
   @media (max-width: 820px) { .split { grid-template-columns: 1fr; } }
@@ -129,20 +128,16 @@
   <a href="https://arxiv.org/abs/2602.07775" target="_blank" rel="noopener"><i class="ai ai-arxiv"></i>arXiv</a>
   <a href="https://github.com/Rolling-Sink/Rolling-Sink" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i>Code</a>
   <a href="https://huggingface.co/spaces/haodongli/RollingSink" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.025 1.13c-5.77 0-10.449 4.647-10.449 10.378 0 1.112.178 2.181.503 3.185.064-.222.203-.444.416-.577a.96.96 0 0 1 .524-.15c.293 0 .584.124.84.284.278.173.48.408.71.694.226.282.458.611.684.951v-.014c.017-.324.106-.622.264-.874s.403-.487.762-.543c.3-.047.596.06.787.203s.31.313.4.467c.15.257.212.468.233.542.01.026.653 1.552 1.657 2.54.616.605 1.01 1.223 1.082 1.912.055.537-.096 1.059-.38 1.572.637.121 1.294.187 1.967.187.657 0 1.298-.063 1.921-.178-.287-.517-.44-1.041-.384-1.581.07-.69.465-1.307 1.081-1.913 1.004-.987 1.647-2.513 1.657-2.539.021-.074.083-.285.233-.542.09-.154.208-.323.4-.467a1.08 1.08 0 0 1 .787-.203c.359.056.604.29.762.543s.247.55.265.874v.015c.225-.34.457-.67.683-.952.23-.286.432-.52.71-.694.257-.16.547-.284.84-.285a.97.97 0 0 1 .524.151c.228.143.373.388.43.625l.006.04a10.3 10.3 0 0 0 .534-3.273c0-5.731-4.678-10.378-10.449-10.378M8.327 6.583a1.5 1.5 0 0 1 .713.174 1.487 1.487 0 0 1 .617 2.013c-.183.343-.762-.214-1.102-.094-.38.134-.532.914-.917.71a1.487 1.487 0 0 1 .69-2.803m7.486 0a1.487 1.487 0 0 1 .689 2.803c-.385.204-.536-.576-.916-.71-.34-.12-.92.437-1.103.094a1.487 1.487 0 0 1 .617-2.013 1.5 1.5 0 0 1 .713-.174m-10.68 1.55a.96.96 0 1 1 0 1.921.96.96 0 0 1 0-1.92m13.838 0a.96.96 0 1 1 0 1.92.96.96 0 0 1 0-1.92M8.489 11.458c.588.01 1.965 1.157 3.572 1.164 1.607-.007 2.984-1.155 3.572-1.164.196-.003.305.12.305.454 0 .886-.424 2.328-1.563 3.202-.22-.756-1.396-1.366-1.63-1.32q-.011.001-.02.006l-.044.026-.01.008-.03.024q-.018.017-.035.036l-.032.04a1 1 0 0 0-.058.09l-.014.025q-.049.088-.11.19a1 1 0 0 1-.083.116 1.2 1.2 0 0 1-.173.18q-.035.029-.075.058a1.3 1.3 0 0 1-.251-.243 1 1 0 0 1-.076-.107c-.124-.193-.177-.363-.337-.444-.034-.016-.104-.008-.2.022q-.094.03-.216.087-.06.028-.125.063l-.13.074q-.067.04-.136.086a3 3 0 0 0-.135.096 3 3 0 0 0-.26.219 2 2 0 0 0-.12.121 2 2 0 0 0-.106.128l-.002.002a2 2 0 0 0-.09.132l-.001.001a1.2 1.2 0 0 0-.105.212q-.013.036-.024.073c-1.139-.875-1.563-2.317-1.563-3.203 0-.334.109-.457.305-.454m.836 10.354c.824-1.19.766-2.082-.365-3.194-1.13-1.112-1.789-2.738-1.789-2.738s-.246-.945-.806-.858-.97 1.499.202 2.362c1.173.864-.233 1.45-.685.64-.45-.812-1.683-2.896-2.322-3.295s-1.089-.175-.938.647 2.822 2.813 2.562 3.244-1.176-.506-1.176-.506-2.866-2.567-3.49-1.898.473 1.23 2.037 2.16c1.564.932 1.686 1.178 1.464 1.53s-3.675-2.511-4-1.297c-.323 1.214 3.524 1.567 3.287 2.405-.238.839-2.71-1.587-3.216-.642-.506.946 3.49 2.056 3.522 2.064 1.29.33 4.568 1.028 5.713-.624m5.349 0c-.824-1.19-.766-2.082.365-3.194 1.13-1.112 1.789-2.738 1.789-2.738s.246-.945.806-.858.97 1.499-.202 2.362c-1.173.864.233 1.45.685.64.451-.812 1.683-2.896 2.322-3.295s1.089-.175.938.647-2.822 2.813-2.562 3.244 1.176-.506 1.176-.506 2.866-2.567 3.49-1.898-.473 1.23-2.037 2.16c-1.564.932-1.686 1.178-1.464 1.53s3.675-2.511 4-1.297c.323 1.214-3.524 1.567-3.287 2.405.238.839 2.71-1.587 3.216-.642.506.946-3.49 2.056-3.522 2.064-1.29.33-4.568 1.028-5.713-.624"/></svg>Demo</a>
-  <a href="https://www.youtube.com/watch?v=U1eAGF_jcxI&list=PLIfXMX0d4BSJO_S3Wte7SAZpcdSFmZEvD" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i>Gallery (5&ndash;30&nbsp;min)</a>
+  <a href="https://www.youtube.com/watch?v=U1eAGF_jcxI&list=PLIfXMX0d4BSJO_S3Wte7SAZpcdSFmZEvD" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i>Gallery (5~30&nbsp;min)</a>
   <a href="#bibtex"><i class="fa-solid fa-quote-left"></i>BibTeX</a>
 </p>
 
 <!-- ============================ TEASER ============================ -->
 <figure class="teaser">
-  <video src="videos/Ours_SnowBoard_YouTube.mp4" autoplay loop muted playsinline controls preload="metadata" aria-label="Rolling Sink 5-minute rollout"></video>
+  <iframe src="https://www.youtube.com/embed/oNFHLi6vrHI" title="Rolling Sink teaser video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </figure>
 <p class="teaser-caption">
-  <strong>TL;DR:</strong> <span class="rolling-sink"><strong>Rolling Sink</strong></span> is a <strong>training-free</strong> inference-time cache policy that keeps a
-  <strong>5s-trained</strong> autoregressive video diffusion model rolling <strong>far beyond</strong> its training horizon &mdash;
-  here a <strong>5-minute</strong> rollout (FPS&nbsp;=&nbsp;16), and up to <strong>30&nbsp;minutes</strong> ($360\times$ the training horizon) &mdash; under a bounded cache.
-  <br>
-  See the <a class="inline-link" href="https://www.youtube.com/watch?v=U1eAGF_jcxI&list=PLIfXMX0d4BSJO_S3Wte7SAZpcdSFmZEvD" target="_blank" rel="noopener">full video gallery</a> for <strong>2&times; 30-minute</strong> and <strong>20+&times; 5-minute</strong> rollouts.
+  TL;DR: Rolling Sink extends a short-horizon-trained AR video diffusion model to much longer test-time rollouts without extra training.
 </p>
 
 <!-- ============================ TOC ============================ -->
@@ -151,7 +146,7 @@
   <ol>
     <li><a href="#abstract">Abstract</a></li>
     <li><a href="#motivation">Motivation</a></li>
-    <li><a href="#method">Method: Rolling Sink</a></li>
+    <li><a href="#method">Method</a></li>
     <li><a href="#results">Results</a></li>
     <li><a href="#bibtex">BibTeX</a></li>
   </ol>
@@ -163,94 +158,92 @@
 Autoregressive (AR) video diffusion models in the <a class="inline-link" href="https://self-forcing.github.io/" target="_blank" rel="noopener">Self Forcing</a> family generate a video chunk by chunk, each conditioned on the ones before it, so they can keep rolling out with no preset length. In practice they are trained on short, fixed clips (<em>e.g.</em>, 5s). Once a rollout passes this training horizon, the cache fills with self-generated chunks the model never saw in training, and quality degrades: colors oversaturate, identities drift, structures collapse, and motion fades.
 </p>
 <p>
-We frame this failure as a <strong>cache-behavior mismatch</strong> &mdash; a domain shift between the within-horizon caches seen in training and those produced by open-ended testing &mdash; and address it with <span class="rolling-sink"><strong>Rolling Sink</strong></span>, a <strong>training-free</strong> inference-time cache policy. Within the base model's fixed cache budget, Rolling Sink holds the cache close to its stable within-horizon behavior: it restores <strong>low-drift content</strong>, <strong>sliding temporal indices</strong>, and <strong>evolving semantics</strong>, and keeps a small recent context. Attention sink and temporal re-indexing are existing mechanisms; our contribution is the mismatch formulation, the joint bounded-cache policy, and the <strong>Rolling Semantics</strong> schedule.
+We frame this failure as a cache-behavior mismatch, a domain shift between the within-horizon caches seen in training and those produced by open-ended testing, and address it with <strong><span class="rolling-sink">Rolling Sink</span></strong>, a training-free inference-time cache policy. Within the base model's fixed cache budget, Rolling Sink holds the cache close to its stable within-horizon behavior: it restores low-drift content, sliding temporal indices, and evolving semantics, and keeps a small recent context. Attention sink and temporal re-indexing are existing mechanisms. Our contribution is the mismatch formulation, the joint bounded-cache policy, and the Rolling Semantics schedule.
 </p>
 <p>
-On two 5s-trained bases, <strong>Self Forcing</strong> and <strong>Causal Forcing</strong>, Rolling Sink attains the <strong>best averaged rank</strong> on <code>VBench-Long</code> at both 1- and 5-minute rollouts under the same inference setting, at about <strong>0.56% throughput change</strong>, and holds GPU memory constant. It also sustains a <strong>30-minute</strong> qualitative rollout, $360\times$ its training horizon.
+On two 5s-trained bases, <a class="inline-link" href="https://self-forcing.github.io/" target="_blank" rel="noopener">Self Forcing</a> and <a class="inline-link" href="https://thu-ml.github.io/CausalForcing.github.io/" target="_blank" rel="noopener">Causal Forcing</a>, Rolling Sink attains the best averaged rank on <a class="inline-link" href="https://github.com/Vchitect/VBench/tree/master/vbench2_beta_long" target="_blank" rel="noopener"><code>VBench-Long</code></a> at both 1- and 5-minute rollouts under the same inference setting, at about 0.56% throughput change, and holds GPU memory constant. It also sustains a 30-minute qualitative rollout, $360\times$ its training horizon.
+We validate at 1- and 5-minute rollouts and do not claim guaranteed quality at arbitrary duration.
 </p>
 
 <!-- ============================ 2. MOTIVATION ============================ -->
 <h2 id="motivation">&sect;2&nbsp;&nbsp;Motivation</h2>
-<p>
-Shot length in film is <strong>open-ended</strong>: a take may last seconds or run for minutes, like the 16.5-minute opening dialogue of Steve McQueen's <a class="inline-link" href="https://en.wikipedia.org/wiki/Hunger_(2008_film)" target="_blank" rel="noopener"><em>Hunger</em></a> or the minute-long tricycle shot in Kubrick's <em>The Shining</em>. This motivates open-ended generation, where the length is not fixed and the model must keep producing coherent frames for as long as asked.
-</p>
-<p>
-Large video diffusion models (<a class="inline-link" href="https://openai.com/index/sora-2/" target="_blank" rel="noopener">Sora</a>, <a class="inline-link" href="https://wan.video/" target="_blank" rel="noopener">Wan</a>, <a class="inline-link" href="https://app.klingai.com/global/release-notes/c605hp1tzd" target="_blank" rel="noopener">Kling</a>, <a class="inline-link" href="https://deepmind.google/models/veo/" target="_blank" rel="noopener">Veo</a>, <a class="inline-link" href="https://runwayml.com/research/introducing-runway-gen-4.5" target="_blank" rel="noopener">Gen</a>) denoise all frames at once, which ties them to short, fixed clips and rules out this setting. AR video diffusion models in the Self Forcing family instead predict each chunk from previously generated ones, which lets them keep rolling out with no preset length. Within the training horizon they are stable, but <strong>once a rollout passes it they degrade fast</strong>.
-</p>
 <figure>
   <img class="fig" src="images/teaser_fig.jpg" alt="Within-horizon stability vs. beyond-horizon drift, and Rolling Sink's fix">
-  <figcaption>
-    Within the <strong>5s</strong> training horizon the base AR model is stable. Rolled out to <strong>30&ndash;60s</strong>, the frozen <a class="inline-link" href="https://self-forcing.github.io/" target="_blank" rel="noopener">Self Forcing</a> base drifts &mdash; color drift, collapsed structures, vanished motion &mdash; whereas <span class="rolling-sink"><strong>Rolling Sink</strong></span> stays stable with <strong>no extra training</strong>, and keeps rolling <strong>far beyond</strong> the training duration (<strong>90s&ndash;5min</strong>) without drifting.
-  </figcaption>
 </figure>
+<p>
+Shot length in film is open-ended: a take may last seconds or run for minutes, like the <a class="inline-link" href="https://www.youtube.com/watch?v=aycGYu_8Hhw&t=60s" target="_blank" rel="noopener">16.5-minute opening dialogue</a> of Steve McQueen's <em>Hunger</em> or the minute-long tricycle shot in Kubrick's <em>The Shining</em>. This motivates open-ended generation, where the length is not fixed and the model must keep producing coherent frames for as long as asked.
+</p>
+<p>
+Large video diffusion models (<a class="inline-link" href="https://openai.com/index/sora-2/" target="_blank" rel="noopener">Sora</a>, <a class="inline-link" href="https://wan.video/" target="_blank" rel="noopener">Wan</a>, <a class="inline-link" href="https://app.klingai.com/global/release-notes/c605hp1tzd" target="_blank" rel="noopener">Kling</a>, <a class="inline-link" href="https://deepmind.google/models/veo/" target="_blank" rel="noopener">Veo</a>, <a class="inline-link" href="https://runwayml.com/research/introducing-runway-gen-4.5" target="_blank" rel="noopener">Gen</a>) denoise all frames at once, which ties them to short, fixed clips and rules out this setting. AR video diffusion models in the Self Forcing family instead predict each chunk from previously generated ones, which lets them keep rolling out with no preset length. Within the training horizon they are stable, but once a rollout passes it they degrade fast.
+</p>
 
 <!-- ============================ 3. METHOD ============================ -->
-<h2 id="method">&sect;3&nbsp;&nbsp;Method: Rolling Sink</h2>
-<p>
-The prompt embedding is fixed, and each chunk starts from the same noise distribution. The only input that changes across the rollout is thus the <strong>cache</strong>, <em>i.e.</em>, the past self-generated chunks. Within the horizon, the cache stays in the training distribution and the model behaves as trained; beyond it, the cache falls outside that distribution, each prediction is biased, and the errors compound. Since limited-horizon training cannot cover open-ended lengths, the cache is the only test-time lever.
-</p>
-<p>
-The cache enters the model through attention over its chunks, so each chunk contributes <strong>three factors the model reads</strong>: <strong>content</strong>, <strong>temporal position</strong>, and, across chunks, a <strong>semantic trajectory</strong>. Keeping the test cache in-distribution therefore means matching these three &mdash; &#9312; low-drift content, &#9313; sliding temporal indices, and &#9314; evolving semantics. Rolling Sink restores them <strong>in order</strong>, content first, under the bounded budget of $K$ chunks.
-</p>
+<h2 id="method">&sect;3&nbsp;&nbsp;Method</h2>
 <figure>
   <img class="fig" src="images/method_fig.png" alt="Cache analysis and four-stage derivation of Rolling Sink">
   <figcaption>
-    <strong>Cache analysis and derivation of Rolling Sink.</strong>
-    <strong>(a)</strong> The base AR model uses a bounded recent cache; beyond the training horizon its temporal indices still slide and its semantics still evolve, but the cached <em>content</em> drifts.
-    <strong>(b)</strong> <strong>Attention Sink</strong> reuses low-drift within-horizon chunks to restore content, but leaves the sink fixed in indices and semantics.
-    <strong>(c)</strong> <strong>Temporal Re-index</strong> assigns the sink chunks to the recent window just before the current chunk, restoring sliding indices.
-    <strong>(d)</strong> <strong>Rolling Semantics</strong> traverses the low-drift chunks forward-then-reverse and reads a sliding window from them, restoring evolving semantics; one recent chunk is retained for local motion.
+    Cache analysis and derivation of Rolling Sink.
+    (a) The base AR model uses a bounded recent cache; beyond the training horizon its temporal indices still slide and its semantics still evolve, but the cached <em>content</em> drifts.
+    (b) Attention Sink reuses low-drift within-horizon chunks to restore content, but leaves the sink fixed in indices and semantics.
+    (c) Temporal Re-index assigns the sink chunks to the recent window just before the current chunk, restoring sliding indices.
+    (d) Rolling Semantics traverses the low-drift chunks forward-then-reverse and reads a sliding window from them, restoring evolving semantics; one recent chunk is retained for local motion.
   </figcaption>
 </figure>
+<p>
+The prompt embedding is fixed, and each chunk starts from the same noise distribution. The only input that changes across the rollout is thus the cache, <em>i.e.</em>, the past self-generated chunks. Within the horizon, the cache stays in the training distribution and the model behaves as trained. Beyond it, the cache falls outside that distribution, each prediction is biased, and the errors compound. Since limited-horizon training can never cover open-ended lengths, the cache is the only test-time lever.
+</p>
+<p>
+The cache enters the model through attention over its chunks, so each chunk contributes three factors the model reads: content, temporal position, and, across chunks, a semantic trajectory. Keeping the test cache in-distribution therefore means matching these three &mdash; &#9312; low-drift content, &#9313; sliding temporal indices, and &#9314; evolving semantics. Rolling Sink restores them in order, content first, under the bounded budget of $K$ chunks.
+</p>
 
 <figure>
-  <img class="fig-table" src="images/tab1.png" alt="Cache-mechanism comparison of long-horizon AR methods">
-  <figcaption><strong>Table 1. Cache-mechanism comparison of long-horizon AR methods.</strong> Beyond the training horizon, keeping the test cache in-distribution means matching the three factors the model conditions on (<em>drifted</em>: off-distribution content, <em>pinned</em>: static sink, <em>rolling</em>: evolving sink). Attention sink and RoPE re-indexing are existing mechanisms; only <span class="rolling-sink"><strong>Rolling Sink</strong></span> matches all three, and <strong>Rolling Semantics</strong> (<em>rolling</em>) is its one new component.</figcaption>
+  <img class="fig" src="images/tab1.png" alt="Cache-mechanism comparison of long-horizon AR methods">
+  <figcaption>Table 1. Cache-mechanism comparison of long-horizon AR methods. Beyond the training horizon, keeping the test cache in-distribution means matching the three factors the model conditions on (<em>drifted</em>: off-distribution content, <em>pinned</em>: static sink, <em>rolling</em>: evolving sink). Attention sink and RoPE re-indexing are existing mechanisms; only <span class="rolling-sink">Rolling Sink</span> matches all three, and Rolling Semantics (<em>rolling</em>) is its one new component.</figcaption>
 </figure>
 <h4 class="sub">&sect;3.1&nbsp;&nbsp;Cache-Behavior Ablation (each stage improves)</h4>
 <figure>
-  <img class="fig-narrow" src="images/ablation.png" alt="Cache-behavior ablation: video quality vs sink/cache ratio">
+  <img class="fig-wide" src="images/ablation.png" alt="Cache-behavior ablation: video quality vs sink/cache ratio">
   <figcaption>
-    <em>Video Quality</em> (mean over all <code>VBench-Long</code> dimensions) rises as each cache behavior is added &mdash; <strong>Attention Sink</strong>, then <strong>Temporal Re-index</strong>, then <strong>Rolling Semantics</strong> &mdash; all above the no-sink-chunk base, at both 1- and 5-minute rollouts, and best at the default $S/K=5/6$.
+    <em>Video Quality</em> (mean over all <code>VBench-Long</code> dimensions) rises as each cache behavior is added &mdash; Attention Sink, then Temporal Re-index, then Rolling Semantics &mdash; all above the no-sink-chunk base, at both 1- and 5-minute rollouts, and best at the default $S/K=5/6$.
   </figcaption>
 </figure>
 
 <!-- ============================ 4. RESULTS ============================ -->
 <h2 id="results">&sect;4&nbsp;&nbsp;Results</h2>
 <p>
-We evaluate on <code>VBench-Long</code> over <strong>1- and 5-minute</strong> rollouts (16 dimensions, averaged rank; lower is better), on two 5s-trained bases (Self Forcing, Causal Forcing) with cache budget $K=6$ and sink ratio $S/K=5/6$. Rolling Sink attains the <strong>best averaged rank in all groups</strong>, and its Self Forcing variant ranks first even against training-based baselines &mdash; including <a class="inline-link" href="https://nvlabs.github.io/LongLive/" target="_blank" rel="noopener">LongLive</a> trained on 1-minute clips &mdash; while using <strong>no extra training</strong> and about <strong>0.56% throughput change</strong> at constant GPU memory.
+We evaluate on <code>VBench-Long</code> over 1- and 5-minute rollouts (16 dimensions, averaged rank; lower is better), on two 5s-trained bases (Self Forcing, Causal Forcing) with cache budget $K=6$ and sink ratio $S/K=5/6$. Rolling Sink attains the best averaged rank in all groups, and its Self Forcing variant ranks first even against training-based baselines &mdash; including <a class="inline-link" href="https://nvlabs.github.io/LongLive/" target="_blank" rel="noopener">LongLive</a> trained on 1-minute clips &mdash; while using no extra training and about 0.56% throughput change at constant GPU memory.
 </p>
 <h4 class="sub">&sect;4.1&nbsp;&nbsp;Quantitative Comparison</h4>
 <p>
-Comparison with <strong>training-free</strong> horizon-extension methods (Deep Forcing, &infin;-RoPE, MemRoPE) on <code>VBench-Long</code>. Rolling Sink attains the <strong>best averaged rank</strong> on both 5s-trained bases. The <em>Forward-only</em> row isolates the schedule &mdash; the forward-reverse traversal beats simple cycling.
+Comparison with training-free horizon-extension methods (Deep Forcing, &infin;-RoPE, MemRoPE) on <code>VBench-Long</code>. Rolling Sink attains the best averaged rank on both 5s-trained bases. The <em>Forward-only</em> row isolates the schedule &mdash; the forward-reverse traversal beats simple cycling.
 </p>
 <figure>
   <img class="fig-table" src="images/tab2.png" alt="VBench-Long 1-minute training-free comparison">
-  <figcaption><strong>Table 2. 1-minute rollouts.</strong> Averaged rank <strong>2.19</strong> (Self Forcing base) and <strong>1.81</strong> (Causal Forcing base).</figcaption>
+  <figcaption>Table 2. 1-minute rollouts. Averaged rank 2.19 (Self Forcing base) and 1.81 (Causal Forcing base).</figcaption>
 </figure>
 <figure>
   <img class="fig-table" src="images/tab3.png" alt="VBench-Long 5-minute training-free comparison">
-  <figcaption><strong>Table 3. 5-minute rollouts</strong> (same organization). Averaged rank <strong>2.12</strong> and <strong>2.12</strong>.</figcaption>
+  <figcaption>Table 3. 5-minute rollouts (same organization). Averaged rank 2.12 and 2.12.</figcaption>
 </figure>
 <p>
-Comparison with <strong>training-based</strong> baselines, several trained on longer clips (6.5s for Rolling Forcing, 1&nbsp;minute for LongLive).
+Comparison with training-based baselines, several trained on longer clips (6.5s for Rolling Forcing, 1&nbsp;minute for LongLive).
 </p>
 <figure>
   <img class="fig-table" src="images/tab4.png" alt="VBench-Long comparison with training-based baselines">
-  <figcaption><strong>Table 4. Training-based comparison, 1- and 5-minute rollouts.</strong> Rolling Sink on the 5s Self Forcing base reaches the best averaged rank (<strong>2.38</strong> and <strong>2.06</strong>), ahead of LongLive trained on 1-minute clips (2.69 and 2.63), with no extra training.</figcaption>
+  <figcaption>Table 4. Training-based comparison, 1- and 5-minute rollouts. Rolling Sink on the 5s Self Forcing base reaches the best averaged rank (2.38 and 2.06), ahead of LongLive trained on 1-minute clips (2.69 and 2.63), with no extra training.</figcaption>
 </figure>
 <h4 class="sub">&sect;4.2&nbsp;&nbsp;Drift over the 5-minute Rollout</h4>
 <figure>
-  <img class="fig" src="images/drift.png" alt="Drift over the 5-minute rollout across three VBench-Long dimensions">
+  <img class="fig-wide" src="images/drift.png" alt="Drift over the 5-minute rollout across three VBench-Long dimensions">
   <figcaption>
-    Three <code>VBench-Long</code> dimensions tracked along the 5-minute trajectory. Baselines <strong>degrade or fluctuate</strong> as frames accumulate, whereas both Rolling Sink variants stay <strong>higher and flatter</strong> &mdash; keeping quality high while slowing drift.
+    Three <code>VBench-Long</code> dimensions tracked along the 5-minute trajectory. Baselines degrade or fluctuate as frames accumulate, whereas both Rolling Sink variants stay higher and flatter &mdash; keeping quality high while slowing drift.
   </figcaption>
 </figure>
 <h4 class="sub">&sect;4.3&nbsp;&nbsp;Qualitative Comparison</h4>
 <figure>
-  <img class="fig" src="images/qc.jpg" alt="Qualitative long-horizon comparison against training-free and training-based baselines">
+  <img class="fig-wide" src="images/qc.jpg" alt="Qualitative long-horizon comparison against training-free and training-based baselines">
   <figcaption>
-    Matched-timestamp rollouts against training-free (Deep Forcing, &infin;-RoPE, MemRoPE) and training-based (Self/Causal/Rolling Forcing, LongLive) baselines; each method's training duration is in brackets. Rolled beyond their horizons the baselines accumulate drift &mdash; oversaturated colors, distorted structure, subject change, fading motion &mdash; while <span class="rolling-sink"><strong>Rolling Sink</strong></span> holds subject, structure, and motion stable using only a 5s base.
+    Matched-timestamp rollouts against training-free (Deep Forcing, &infin;-RoPE, MemRoPE) and training-based (Self/Causal/Rolling Forcing, LongLive) baselines; each method's training duration is in brackets. Rolled beyond their horizons the baselines accumulate drift &mdash; oversaturated colors, distorted structure, subject change, fading motion &mdash; while <span class="rolling-sink">Rolling Sink</span> holds subject, structure, and motion stable using only a 5s base.
   </figcaption>
 </figure>
 
