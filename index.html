@@ -187,7 +187,7 @@ Large video diffusion models (<a class="inline-link" href="https://openai.com/in
   </figcaption>
 </figure>
 <p>
-Across a rollout the prompt and initial noise are fixed, so the only changing input is the cache <em>i.e.</em> the past self-generated chunks. The base was trained only on caches from within-horizon rollouts, so beyond that horizon the cache is out-of-distribution and quality degrades: a domain shift we call the <strong>cache-behavior mismatch</strong>. As we cannot train on unbounded lengths, the only test-time lever is to make the test cache resemble the within-horizon caches seen in training.
+Across a rollout the prompt and initial noise are fixed, so the only changing input is the cache, <em>i.e.</em>, the past self-generated chunks. The base was trained only on caches from within-horizon rollouts, so beyond that horizon the cache is out-of-distribution and quality degrades: a domain shift we call the <strong>cache-behavior mismatch</strong>. As we cannot train on unbounded lengths, the only test-time lever is to make the test cache resemble the within-horizon caches seen in training.
 </p>
 <p>
 But resemble it along which axes? The cache reaches the model only through attention, so each chunk is read along three channels: content, temporal position (its RoPE index), and the semantic trajectory across chunks. Matching the training distribution therefore reduces to matching these three: &#9312;&nbsp;low-drift content, &#9313;&nbsp;sliding temporal indices, &#9314;&nbsp;evolving semantics. A frozen base keeps the last two but drifts on content. <strong><span class="rolling-sink">Rolling Sink</span></strong> restores all three in order under the base's bounded budget of $K$ chunks, with no extra training.
@@ -238,7 +238,7 @@ Video Quality (mean over all <code>VBench-Long</code> dimensions) rises as each 
 </figure>
 <h4 class="sub">&sect;4.5&nbsp;&nbsp;Inference Efficiency</h4>
 <p>
-Rolling Sink keeps the base's few-step denoising and cache budget, its throughput thus tracks the base: 5.35 vs.&nbsp;5.38&nbsp;FPS on an NVIDIA RTX&nbsp;4090 (a <strong>0.56%</strong> change).
+Rolling Sink keeps the base's few-step denoising and cache budget, so its throughput tracks the base: 5.35 vs.&nbsp;5.38&nbsp;FPS on an NVIDIA RTX&nbsp;4090 (a <strong>0.56%</strong> change).
 Its GPU memory cost also stays constant, since $K$ does not grow with rollout length.
 </p>
 
